@@ -106,11 +106,16 @@ test('creative axes avoid recent repetition, prompt includes actual website mate
   const history=[];
   for(let i=0;i<30;i++) {
     const direction=chooseDirection(history);
-    for(const key of Object.keys(direction)) assert.ok(!history.slice(0,key==='countdown'?20:8).some(d=>d[key]===direction[key]));
+    for(const key of Object.keys(direction)) assert.ok(!history.slice(0,8).some(d=>d[key]===direction[key]));
+    assert.ok(!('countdown' in direction)); assert.ok(!('title' in direction));
     history.unshift(direction);
   }
   const prompt=buildPrompt({url:'https://example.com',title:'Widgets',description:'For accountants',passages:['Exact invoice export feature']},history[0],history.slice(1,5));
-  for(const text of ['Exact invoice export feature','15 seconds','No presenter','no news studio','2–4','untrusted','1990s','30–38']) assert.ok(prompt.includes(text),text);
+  for(const text of ['Exact invoice export feature','15 seconds','No presenter','No studio','No countdown number','No “top 10” graphics','interviews heard off-camera','CCTV-style footage','ugly lower-thirds','shock-news / strange-current-affairs','untrusted','1990s']) assert.ok(prompt.includes(text),text);
+  assert.ok(!prompt.includes('no interviews')); assert.ok(!prompt.includes('One large old-fashioned countdown'));
+  const legacy={...history[0],countdown:77,title:'OLD COUNTDOWN TITLE'};
+  const migrated=buildPrompt({url:'https://example.com',title:'Widgets',description:'For accountants',passages:['Exact invoice export feature']},legacy,[legacy]);
+  assert.ok(!migrated.includes('OLD COUNTDOWN TITLE')); assert.ok(!migrated.includes('"countdown":'));
   const long=buildPrompt({url:'https://example.com/'+ 'a'.repeat(2000),title:'T'.repeat(180),description:'D'.repeat(500),passages:Array(18).fill('specific product detail '.repeat(30))},history[0],history.slice(1,5));
   assert.ok(long.length<=7000);
 });
