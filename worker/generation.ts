@@ -33,8 +33,8 @@ export async function createProdiaJob(request: Request, env: GenerationEnv) {
   try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
   if (!body || typeof body.url !== "string" || body.url.length > 2048) return json({ error: "Enter a valid website URL" }, 400);
   const source = await readWebsite(body.url);
-  const { direction, recent } = await reserveDirection(env.MEDIA);
-  const prompt = buildPrompt(source, direction, recent);
+  const { direction } = await reserveDirection(env.MEDIA);
+  const prompt = buildPrompt(source, direction);
   console.log(JSON.stringify({ event: "prodia_prompt", hostname: new URL(source.url).hostname, prompt }));
   const response = await fetch(PRODIA_ASYNC_URL, { method: "POST", signal: AbortSignal.timeout(30_000), headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4", "content-type": "application/json" }, body: JSON.stringify({ type: env.PRODIA_MODEL_TYPE || DEFAULT_PRODIA_MODEL_TYPE, config: { prompt, duration: 15, aspect_ratio: "16:9", resolution: "768P" } }) });
   if (!response.ok) return json({ error: "Unable to start Prodia report" }, 502);

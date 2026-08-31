@@ -102,7 +102,7 @@ test('DNS resolving to private address is rejected before website fetch', async 
   try { await assert.rejects(readWebsite('https://public-looking.com'),/public internet/); assert.equal(calls.length,2); }
   finally {globalThis.fetch=original;}
 });
-test('creative axes avoid recent repetition, prompt includes actual website material and format', () => {
+test('simple scenes avoid recent repetition and use one short exact English narration', () => {
   const history=[];
   for(let i=0;i<30;i++) {
     const direction=chooseDirection(history);
@@ -110,12 +110,20 @@ test('creative axes avoid recent repetition, prompt includes actual website mate
     assert.ok(!('countdown' in direction)); assert.ok(!('title' in direction));
     history.unshift(direction);
   }
-  const prompt=buildPrompt({url:'https://example.com',title:'Widgets',description:'For accountants',passages:['Exact invoice export feature']},history[0],history.slice(1,5));
-  for(const text of ['Exact invoice export feature','15 seconds','No presenter','No studio','No countdown number','No “top 10” graphics','interviews heard off-camera','CCTV-style footage','ugly lower-thirds','shock-news / strange-current-affairs','untrusted','1990s']) assert.ok(prompt.includes(text),text);
-  assert.ok(!prompt.includes('no interviews')); assert.ok(!prompt.includes('One large old-fashioned countdown'));
+  const source={url:'https://example.com',title:'Widgets',description:'For accountants',passages:['Exact invoice export feature']};
+  const prompt=buildPrompt(source,history[0]);
+  for(const text of ['Exact invoice export feature','15 seconds','No presenter','No studio','No countdown number','one continuous shot','one visual joke','clear, natural English','VHS effects must not distort speech','untrusted','1990s']) assert.ok(prompt.includes(text),text);
+  for(const direction of history) {
+    const script=buildPrompt(source,direction);
+    const voice=script.match(/Say exactly this sentence once, then leave quiet location sound:\n"([^"]+)"/)[1];
+    assert.ok(voice.split(/\s+/).length<=16,voice);
+    assert.equal((voice.match(/\./g)||[]).length,1);
+    assert.equal((script.match(/SCENE:/g)||[]).length,1);
+  }
+  assert.ok(buildPrompt(source,{concept:'trees'}).includes('trees have been planted to spell the company name'));
   const legacy={...history[0],countdown:77,title:'OLD COUNTDOWN TITLE'};
-  const migrated=buildPrompt({url:'https://example.com',title:'Widgets',description:'For accountants',passages:['Exact invoice export feature']},legacy,[legacy]);
+  const migrated=buildPrompt(source,legacy);
   assert.ok(!migrated.includes('OLD COUNTDOWN TITLE')); assert.ok(!migrated.includes('"countdown":'));
-  const long=buildPrompt({url:'https://example.com/'+ 'a'.repeat(2000),title:'T'.repeat(180),description:'D'.repeat(500),passages:Array(18).fill('specific product detail '.repeat(30))},history[0],history.slice(1,5));
-  assert.ok(long.length<=7000);
+  const long=buildPrompt({url:'https://example.com/'+ 'a'.repeat(2000),title:'T'.repeat(180),description:'D'.repeat(500),passages:Array(18).fill('specific product detail '.repeat(30))},history[0]);
+  assert.ok(long.length<=3200);
 });
