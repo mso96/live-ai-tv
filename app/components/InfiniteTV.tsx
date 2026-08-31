@@ -16,7 +16,7 @@ export default function InfiniteTV() {
 
   const loadPlaylist = useCallback(async () => {
     try {
-      const response = await fetch(`/playlist.json?ts=${Date.now()}`, { cache: "no-store" });
+      const response = await fetch(`/api/playlist?ts=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error("playlist unavailable");
       const incoming = (await response.json()) as PlaylistItem[];
       if (!Array.isArray(incoming) || incoming.length === 0) throw new Error("empty playlist");

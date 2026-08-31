@@ -41,7 +41,7 @@ const worker = {
       return checkProdiaJob(url.pathname.split("/").pop() || "", request, env);
     }
 
-    if (url.pathname === "/playlist.json" && request.method === "GET" && env.MEDIA) {
+    if ((url.pathname === "/playlist.json" || url.pathname === "/api/playlist") && request.method === "GET" && env.MEDIA) {
       const playlist = await env.MEDIA.get("playlist.json");
       if (playlist) {
         const headers = new Headers({ "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
