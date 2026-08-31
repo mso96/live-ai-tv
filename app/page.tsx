@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import InfiniteTV from "./components/InfiniteTV";
+import Horoscopes from "./components/Horoscopes";
 import { parsePlaylist, type PlaylistItem } from "./lib/playerQueue";
 
 const WEATHER_URL = "https://www.bbc.co.uk/weather/2643743";
@@ -99,7 +100,7 @@ export default function Home() {
                 <div id="website-submit-status" className="submit-note" role="status" aria-live="polite">{generationStatus || "YOUR LINK. OUR HIGHLY QUESTIONABLE JOURNALISM."}</div>
               </section>
             </section>
-            <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather" titleHref={WEATHER_URL}><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><RightModule title="Horoscopes"><p className="horoscope">♈ <b>Aries</b> &nbsp; Avoid roundabouts and people named Colin.</p><a href="#">Read your horoscope &gt;&gt;</a></RightModule></aside>
+            <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather" titleHref={WEATHER_URL}><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><Horoscopes /></aside>
           </div>
         )}
         <footer><span><a href="https://github.com/mso96/live-ai-tv" target="_blank" rel="noopener noreferrer">GitHub ↗</a> | <a href="https://x.com/msefaoruc" target="_blank" rel="noopener noreferrer">Twitter/X ↗</a></span><span>© The Morning Post 2003</span></footer>
