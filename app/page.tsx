@@ -107,7 +107,7 @@ export default function Home() {
               <Horoscopes /></aside>
           </div>
         )}
-        <footer><span><a href="https://github.com/mso96/live-ai-tv" target="_blank" rel="noopener noreferrer">GitHub ↗</a> | <a href="https://x.com/msefaoruc" target="_blank" rel="noopener noreferrer">Twitter/X ↗</a></span><span>© The Morning Post 2003</span></footer>
+        <footer><span><a href="https://github.com/mso96/the-morning-post" target="_blank" rel="noopener noreferrer">GitHub ↗</a> | <a href="https://x.com/msefaoruc" target="_blank" rel="noopener noreferrer">Twitter/X ↗</a></span><span>© The Morning Post 2003</span></footer>
       </div>
     </main>
   );

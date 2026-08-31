@@ -44,8 +44,8 @@ No application database, authentication, Redis, or queue service is required.
 Requires **Node.js 22.13+** and npm.
 
 ```sh
-git clone https://github.com/mso96/live-ai-tv.git
-cd live-ai-tv
+git clone https://github.com/mso96/the-morning-post.git
+cd the-morning-post
 npm ci
 npm run dev
 ```
@@ -149,4 +149,4 @@ tests/                        Channel and generation regression tests
 - **Watch storage and logs.** Generated clips remain in R2, and server logs contain generated prompts. Plan retention and access accordingly.
 - **Review your assets.** Third-party names, music, and media retain their respective owners’ rights. No blanket licence for those assets is implied.
 
-Found a bug? [Open an issue](https://github.com/mso96/live-ai-tv/issues). For changes, keep the retro design intact, include a focused test where practical, and never include credentials or private website data.
+Found a bug? [Open an issue](https://github.com/mso96/the-morning-post/issues). For changes, keep the retro design intact, include a focused test where practical, and never include credentials or private website data.
