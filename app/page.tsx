@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import InfiniteTV from "./components/InfiniteTV";
-import Horoscopes from "./components/Horoscopes";
 import { parsePlaylist, type PlaylistItem } from "./lib/playerQueue";
 
 const WEATHER_URL = "https://www.bbc.co.uk/weather/2643743";
@@ -104,7 +103,7 @@ export default function Home() {
               <div className="right-module estate-ad" role="img" aria-label="Fictional property advert: Affordable Homes in London. A rare find! Small prices. Smaller rooms.">
                 <img src="/assets/london-homes-retro.png" alt="" width={1536} height={1024} loading="lazy" />
               </div>
-              <Horoscopes /></aside>
+            </aside>
           </div>
         )}
         <footer><span><a href="https://github.com/mso96/the-morning-post" target="_blank" rel="noopener noreferrer">GitHub ↗</a> | <a href="https://x.com/msefaoruc" target="_blank" rel="noopener noreferrer">Twitter/X ↗</a></span><span>© The Morning Post 2003</span></footer>
