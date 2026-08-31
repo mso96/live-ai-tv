@@ -13,11 +13,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "This Is The News — British Fake-News Generator",
-  description: "Enter a website. We’ll investigate it irresponsibly.",
+  title: "The Morning Post",
+  description: "Live news, strange reports and highly questionable journalism. The Morning Post is on air.",
+  applicationName: "The Morning Post",
+  openGraph: {
+    title: "The Morning Post",
+    description: "Live news, strange reports and highly questionable journalism.",
+    siteName: "The Morning Post",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "The Morning Post",
+    description: "Live news, strange reports and highly questionable journalism.",
+  },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg?v=morning-post-1", type: "image/svg+xml" },
+      { url: "/favicon-32.png?v=morning-post-1", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: "/favicon.ico?v=morning-post-1",
+    apple: { url: "/apple-touch-icon.png?v=morning-post-1", sizes: "180x180", type: "image/png" },
   },
 };
 
