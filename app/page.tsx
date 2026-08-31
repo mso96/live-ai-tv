@@ -80,7 +80,7 @@ export default function Home() {
       <div className="portal-shell">
         <header className="site-header"><button className="wordmark" onClick={() => setSelected(null)}>the<span>morning</span>post</button><a className="prodia-credit" href="https://prodia.com/" target="_blank" rel="noopener noreferrer" aria-label="Powered by Prodia — opens in a new tab"><img src="/assets/powered-by-prodia-badge.png" alt="Powered by Prodia" width="2172" height="724" /></a></header>
         <nav className="main-nav">{["HOME", "NEWS", "UK", "WORLD", "POLITICS", "BUSINESS", "SPORT", "ENTERTAINMENT", "LIFE"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}</nav>
-        <div className="sub-nav"><span>Most Read</span> | Latest News | Video | Blogs | <a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Weather</a> | Horoscopes | Classifieds <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
+        <div className="sub-nav"><span className="sub-nav-links">Most Read | Latest News | Video | Blogs | <a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Weather</a> | Horoscopes | Classifieds</span> <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
 
         {selected ? <Article story={selected} playing={playing} setPlaying={setPlaying} onBack={() => setSelected(null)} /> : (
           <div className="portal-grid">
@@ -100,7 +100,7 @@ export default function Home() {
             <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather" titleHref={WEATHER_URL}><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><RightModule title="Horoscopes"><p className="horoscope">♈ <b>Aries</b> &nbsp; Avoid roundabouts and people named Colin.</p><a href="#">Read your horoscope &gt;&gt;</a></RightModule></aside>
           </div>
         )}
-        <footer><span>About us | Contact us | Privacy | Terms & Conditions | Syndication</span><span>© The Morning Post 2003</span></footer>
+        <footer><a href="https://github.com/mso96/live-ai-tv" target="_blank" rel="noopener noreferrer">GitHub ↗</a><span>© The Morning Post 2003</span></footer>
       </div>
     </main>
   );
