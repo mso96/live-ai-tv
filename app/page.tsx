@@ -86,7 +86,7 @@ export default function Home() {
             <section className="centre-col"><div className="live-tv"><div className="tv-label">LIVE NEWS <span>● ON AIR</span></div><InfiniteTV priorityClip={readyClip} onPlaying={clip => { if (clip.id === readyClip?.id) { setGenerationStatus("YOUR REPORT IS NOW ON AIR"); setReadyClip(undefined); } else { setGenerationStatus(status => status === "YOUR REPORT IS NOW ON AIR" ? "REPORT BROADCAST — LIVE TV CONTINUES" : status); } }} /></div>
               <section className="website-invitation" aria-labelledby="website-invitation-title">
                 <div className="invitation-heading"><span>YOUR TURN</span><h2 id="website-invitation-title">PUT YOUR WEBSITE ON TV</h2></div>
-                <p>Send your link. We’ll turn it into an absurd TV report.</p>
+                <p>Send your link. See your advert on TV.</p>
                 <label className="website-address-label" htmlFor="website-address">ENTER YOUR WEBSITE ADDRESS</label>
                 <form className="website-submit" onSubmit={sendWebsite}>
                   <input id="website-address" value={siteUrl} onChange={(event) => setSiteUrl(event.target.value)} placeholder="https://yourwebsite.com" aria-describedby="website-submit-status" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} />
