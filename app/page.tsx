@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import InfiniteTV from "./components/InfiniteTV";
 import { parsePlaylist, type PlaylistItem } from "./lib/playerQueue";
 
+const WEATHER_URL = "https://www.bbc.co.uk/weather/2643743";
+
 type Story = { title: string; standfirst: string; section: string; time: string };
 
 const stories: Story[] = [
@@ -78,13 +80,13 @@ export default function Home() {
       <div className="portal-shell">
         <header className="site-header"><button className="wordmark" onClick={() => setSelected(null)}>the<span>morning</span>post</button><a className="prodia-credit" href="https://prodia.com/" target="_blank" rel="noopener noreferrer" aria-label="Powered by Prodia — opens in a new tab"><img src="/assets/powered-by-prodia-badge.png" alt="Powered by Prodia" width="2172" height="724" /></a></header>
         <nav className="main-nav">{["HOME", "NEWS", "UK", "WORLD", "POLITICS", "BUSINESS", "SPORT", "ENTERTAINMENT", "LIFE"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}</nav>
-        <div className="sub-nav"><span>Most Read</span> | Latest News | Video | Blogs | Weather | Horoscopes | Classifieds <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
+        <div className="sub-nav"><span>Most Read</span> | Latest News | Video | Blogs | <a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Weather</a> | Horoscopes | Classifieds <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
 
         {selected ? <Article story={selected} playing={playing} setPlaying={setPlaying} onBack={() => setSelected(null)} /> : (
           <div className="portal-grid">
             <aside className="left-col"><ModuleTitle>FUN STUFF</ModuleTitle><div className="fun-box"><div className="fun-icon euro">€</div><a>Buying or selling Euro 2000 tickets?</a><p><a>Click here first!</a></p></div><div className="fun-box"><div className="fun-icon arrow-box">➜<small>TRY THIS!</small></div><a>Find out about online auction payments</a><p>with first-e the internet bank</p></div><ModuleTitle>MUSIC</ModuleTitle><div className="music-box"><b>NOW PLAYING:</b><a> Cameron’s World Mix</a><audio controls src="/assets/cameronsworld.mp3" /></div><div className="side-ad">ADVERTISEMENT<br /><strong>WIN A HOLIDAY<br />TO SLOUGH!</strong><button>CLICK HERE</button></div></aside>
             <section className="centre-col"><h1>Live TV</h1><div className="date-line">Sunday 30 August 2003 &nbsp; | &nbsp; Live from our television studio</div><div className="live-tv"><div className="tv-label">LIVE TV <span>● ON AIR</span></div><InfiniteTV priorityClip={readyClip} onPlaying={clip => { if (clip.id === readyClip?.id) { setGenerationStatus("YOUR REPORT IS NOW ON AIR"); setReadyClip(undefined); } else { setGenerationStatus(status => status === "YOUR REPORT IS NOW ON AIR" ? "REPORT BROADCAST — LIVE TV CONTINUES" : status); } }} /></div><form className="website-submit" onSubmit={sendWebsite}><input value={siteUrl} onChange={(event) => setSiteUrl(event.target.value)} placeholder="ENTER WEBSITE ADDRESS" aria-label="Website address" /><button type="submit" disabled={sent}>{sent ? "ADDRESS SENT!" : "SEND WEBSITE"}</button></form><div className="submit-note">{generationStatus || "SEND A WEBSITE TO SEE IT ON TV"}</div></section>
-            <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather"><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href="#">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><RightModule title="Horoscopes"><p className="horoscope">♈ <b>Aries</b> &nbsp; Avoid roundabouts and people named Colin.</p><a href="#">Read your horoscope &gt;&gt;</a></RightModule></aside>
+            <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather" titleHref={WEATHER_URL}><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><RightModule title="Horoscopes"><p className="horoscope">♈ <b>Aries</b> &nbsp; Avoid roundabouts and people named Colin.</p><a href="#">Read your horoscope &gt;&gt;</a></RightModule></aside>
           </div>
         )}
         <footer><span>About us | Contact us | Privacy | Terms & Conditions | Syndication</span><span>© The Morning Post 2003</span></footer>
@@ -94,7 +96,7 @@ export default function Home() {
 }
 
 function ModuleTitle({ children }: { children: React.ReactNode }) { return <h2 className="module-title">{children}</h2>; }
-function RightModule({ title, children }: { title: string; children: React.ReactNode }) {
+function RightModule({ title, titleHref, children }: { title: string; titleHref?: string; children: React.ReactNode }) {
   const openMiniPage = (event: React.MouseEvent<HTMLDivElement>) => {
     if (title !== "Sport Latest") return;
     const link = (event.target as HTMLElement).closest("a");
@@ -103,7 +105,7 @@ function RightModule({ title, children }: { title: string; children: React.React
     const slug = link.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "sport-news";
     window.open(`/funny/${slug}`, "_blank", "noopener,noreferrer");
   };
-  return <section className="right-module"><ModuleTitle>{title}</ModuleTitle><div className="module-body" onClick={openMiniPage}>{children}</div></section>;
+  return <section className="right-module"><ModuleTitle>{titleHref ? <a className="module-heading-link" href={titleHref} target="_blank" rel="noopener noreferrer">{title}</a> : title}</ModuleTitle><div className="module-body" onClick={openMiniPage}>{children}</div></section>;
 }
 
 function Article({ story, playing, setPlaying, onBack }: { story: Story; playing: boolean; setPlaying: (value: boolean) => void; onBack: () => void }) {
