@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 const headlines: Record<string, { title: string; text: string; section?: string; paragraphs?: string[] }> = {
-  "euro-2000-tickets": {
-    title: "Euro 2000 tickets still available, insists man at folding table",
+  "euro-2028-tickets": {
+    title: "Euro 2028 tickets already available, insists man at folding table",
     section: "FUN STUFF",
-    text: "A ticket office in Reading is refusing to acknowledge that Euro 2000 has finished. Its proprietor, Derek, says the tournament is merely experiencing a longer than usual half-time.",
+    text: "A ticket office in Reading has begun selling Euro 2028 tickets from a folding table. Its proprietor, Derek, admits he has no connection to the tournament but says he has already put the kettle on.",
     paragraphs: [
       "For £45, supporters receive a numbered chair in Derek’s conservatory, an orange segment and a promise that Portugal will be along shortly. Restricted-view seats face the airing cupboard.",
       "One customer has been waiting since June. ‘The atmosphere is excellent,’ he said. ‘Derek’s wife has asked us to leave six times.’",
-      "Refunds are available on presentation of the original ticket and written confirmation from the year 2000. The office closes at five, or whenever Derek is called in for his tea.",
+      "Refunds are available on presentation of the original ticket and written confirmation from the year 2028. The office closes at five, or whenever Derek is called in for his tea.",
     ],
   },
   "online-auction-payments": {
@@ -27,6 +27,9 @@ const headlines: Record<string, { title: string; text: string; section?: string;
   "more-sport-news": { title: "More sport news", text: "There is currently no more sport news. Editors are waiting for a ball to do something unexpected." },
 };
 
+// Keep previously shared links working after the year update.
+headlines["euro-2000-tickets"] = headlines["euro-2028-tickets"];
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const story = headlines[slug] || headlines["more-sport-news"];
@@ -43,5 +46,5 @@ export default async function FunnyPage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const story = headlines[slug] || headlines["more-sport-news"];
   const paragraphs = story.paragraphs || ["Witnesses described the events as “technically sporting” but declined to provide further details. The relevant authorities have been notified, although they are not expected to help."];
-  return <main className="mini-page"><div className="mini-shell"><div className="mini-top">THE MORNING POST &nbsp; | &nbsp; {story.section || "SPORT"} &nbsp; | &nbsp; Sunday 30 August 2003</div><h1>{story.title}</h1><div className="mini-rule" /><p className="mini-date">Published 23:47 GMT &nbsp; | &nbsp; By our {story.section ? "very special" : "sports"} correspondent</p><p className="mini-lead">{story.text}</p>{paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<p><b>Related:</b> <Link href="/funny/euro-2000-tickets">Euro 2000 tickets</Link> | <Link href="/funny/online-auction-payments">Online auction payments</Link></p><Link className="mini-back" href="/">&lt;&lt; Back to the Morning Post</Link></div></main>;
+  return <main className="mini-page"><div className="mini-shell"><div className="mini-top">THE MORNING POST &nbsp; | &nbsp; {story.section || "SPORT"} &nbsp; | &nbsp; Sunday 30 August 2003</div><h1>{story.title}</h1><div className="mini-rule" /><p className="mini-date">Published 23:47 GMT &nbsp; | &nbsp; By our {story.section ? "very special" : "sports"} correspondent</p><p className="mini-lead">{story.text}</p>{paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<p><b>Related:</b> <Link href="/funny/euro-2028-tickets">Euro 2028 tickets</Link> | <Link href="/funny/online-auction-payments">Online auction payments</Link></p><Link className="mini-back" href="/">&lt;&lt; Back to the Morning Post</Link></div></main>;
 }
