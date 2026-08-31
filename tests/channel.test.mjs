@@ -67,6 +67,9 @@ test('two-slot hard cut: current → freshly generated → next normal, includin
   assert.equal(c.videos[1-c.active()].src,report.src);
   old.finish(); await tick();
   assert.equal(c.played.at(-1),report.id); assert.equal(c.videos[c.active()].muted,true);
+  const playCount=c.videos[c.active()].plays.length;
+  c.player.prioritize(report); // Late completion notification must not restart a report.
+  assert.equal(c.videos[c.active()].plays.length,playCount);
   assert.equal(c.videos[1-c.active()].src,normalNext);
   c.player.enableSound(); c.videos.forEach(v=>v.blockSound=false);
   c.videos[c.active()].finish(); await tick();

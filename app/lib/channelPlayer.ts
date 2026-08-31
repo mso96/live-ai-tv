@@ -100,7 +100,12 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
       else if (videos[active].ended || videos[active].error) void transition();
       else preload();
     },
-    prioritize(item: PlaylistItem) { queue.prioritize(item); preload(); },
+    prioritize(item: PlaylistItem) {
+      // The 30s poll may discover the report just before its submit response arrives.
+      if (started && queue.current === item.id) { hooks.playing(item); return; }
+      queue.prioritize(item);
+      preload();
+    },
     noPlaylist() { if (!started) hooks.signal(false); },
     enableSound() {
       muted = false;
