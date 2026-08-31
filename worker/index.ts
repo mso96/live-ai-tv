@@ -38,7 +38,7 @@ const worker = {
     }
 
     if (url.pathname.startsWith("/api/generate/") && request.method === "GET") {
-      return checkProdiaJob(url.pathname.split("/").pop() || "", env);
+      return checkProdiaJob(url.pathname.split("/").pop() || "", request, env);
     }
 
     if (url.pathname === "/playlist.json" && request.method === "GET" && env.MEDIA) {
@@ -113,21 +113,22 @@ async function createProdiaJob(request: Request, env: Env) {
   return json({ jobId: result.id, acceptedAt: Date.now() }, 202);
 }
 
-async function checkProdiaJob(jobId: string, env: Env) {
+async function checkProdiaJob(jobId: string, request: Request, env: Env) {
   if (!jobId || !env.PRODIA_TOKEN) return json({ error: "Invalid job" }, 400);
   const stateResponse = await fetch(`${PRODIA_ASYNC_URL}/${encodeURIComponent(jobId)}/job.state.current`, { headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}` } });
   if (!stateResponse.ok) return json({ status: "pending" });
   const state = (await stateResponse.text()).replace(/\"/g, "").trim().toLowerCase();
   if (state === "failed" || state === "cancelled" || state === "canceled") return json({ status: "failed" }, 502);
   if (state !== "processed" && state !== "completed" && state !== "succeeded") return json({ status: state || "pending" });
-  if (!env.MEDIA || !env.MEDIA_BASE_URL) return json({ status: "ready", error: "R2 media storage is not configured" }, 503);
+  if (!env.MEDIA) return json({ status: "ready", error: "R2 media storage is not configured" }, 503);
   const key = `videos/generated-${jobId}.mp4`;
+  const mediaBase = (env.MEDIA_BASE_URL || new URL(request.url).origin).replace(/\/$/, "");
   const existing = await env.MEDIA.head(key);
   if (!existing) {
     const videoResponse = await fetch(`${PRODIA_ASYNC_URL}/${encodeURIComponent(jobId)}/output/video.mp4`, { headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4" } });
     if (!videoResponse.ok || !videoResponse.body) return json({ status: "pending" });
     await env.MEDIA.put(key, videoResponse.body, { httpMetadata: { contentType: "video/mp4", cacheControl: "public, max-age=31536000, immutable" } });
-    await appendToPlaylist(env, { id: `generated-${jobId}`, src: `${env.MEDIA_BASE_URL.replace(/\/$/, "")}/${key}` });
+    await appendToPlaylist(env, { id: `generated-${jobId}`, src: `${mediaBase}/${key}` });
   }
   return json({ status: "ready", id: `generated-${jobId}` });
 }
