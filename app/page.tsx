@@ -19,7 +19,6 @@ const stories: Story[] = [
 
 export default function Home() {
   const [selected, setSelected] = useState<Story | null>(null);
-  const [search, setSearch] = useState("");
   const [playing, setPlaying] = useState(false);
   const [siteUrl, setSiteUrl] = useState("");
   const [sent, setSent] = useState(false);
@@ -27,7 +26,6 @@ export default function Home() {
   const [readyClip, setReadyClip] = useState<PlaylistItem>();
   const generation = useRef<AbortController | null>(null);
   useEffect(() => () => generation.current?.abort(), []);
-  const visibleStories = stories.filter((story) => story.title.toLowerCase().includes(search.toLowerCase()));
 
   const openStory = (story: Story) => { setSelected(story); setPlaying(false); window.scrollTo({ top: 0 }); };
   const sendWebsite = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -80,7 +78,7 @@ export default function Home() {
       <div className="portal-shell">
         <header className="site-header"><button className="wordmark" onClick={() => setSelected(null)}>the<span>morning</span>post</button><a className="prodia-credit" href="https://prodia.com/" target="_blank" rel="noopener noreferrer" aria-label="Powered by Prodia — opens in a new tab"><img src="/assets/powered-by-prodia-badge.png" alt="Powered by Prodia" width="2172" height="724" /></a></header>
         <nav className="main-nav">{["HOME", "NEWS", "UK", "WORLD", "POLITICS", "BUSINESS", "SPORT", "ENTERTAINMENT", "LIFE"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}</nav>
-        <div className="sub-nav"><span className="sub-nav-links">Most Read | Latest News | Video | Blogs | <a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Weather</a> | Horoscopes | Classifieds</span> <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
+        <div className="sub-nav"><span className="sub-nav-links">Most Read | Latest News | Video | Blogs | <a href={WEATHER_URL} target="_blank" rel="noopener noreferrer">Weather</a> | Horoscopes | Classifieds</span> <EditionDate /></div>
 
         {selected ? <Article story={selected} playing={playing} setPlaying={setPlaying} onBack={() => setSelected(null)} /> : (
           <div className="portal-grid">
@@ -104,6 +102,19 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+function EditionDate() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    const refresh = () => setNow(new Date());
+    refresh();
+    const timer = window.setInterval(refresh, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return <time className="edition-date" dateTime={now ? new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).format(now) : undefined}>
+    {now ? new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now) : "\u00a0"}
+  </time>;
 }
 
 function ModuleTitle({ children }: { children: React.ReactNode }) { return <h2 className="module-title">{children}</h2>; }

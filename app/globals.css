@@ -25,6 +25,7 @@
 .mini-shell { max-width:calc(100% - 24px); }
 .portal-shell footer { flex-wrap:wrap; align-items:center; gap:10px; }
 .portal-shell footer a { font-weight:bold; }
+.edition-date { float:right; margin-left:auto; min-width:190px; text-align:right; white-space:nowrap; font-weight:bold; }
 
 @media (max-width:1000px) {
   .portal-page { padding-top:8px; }
@@ -57,6 +58,7 @@
   .prodia-credit { width:25%; max-width:25%; margin-left:8px; }
   .sub-nav { padding:8px; }
   .sub-nav label { width:100%; }
+  .edition-date { float:none; width:100%; min-width:0; text-align:left; }
   .sub-nav input { flex:1; min-width:0; width:auto; }
   .portal-grid { grid-template-columns:minmax(0,1fr); padding:8px; gap:14px; }
   .centre-col, .left-col, .right-col { grid-column:1; }
