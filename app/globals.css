@@ -4,6 +4,8 @@
 .nhs-careers-banner { display:block; width:100%; max-width:200px; margin-top:15px; border:2px outset #ddd; line-height:0; background:#dcff82; }
 .nhs-careers-banner img { display:block; width:100%; height:auto; aspect-ratio:1; }
 .nhs-careers-banner:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+.estate-ad { width:100%; min-width:0; align-self:start; overflow:hidden; border:1px solid #172275; background:#fff4c4; line-height:0; }
+.estate-ad img { display:block; width:100%; height:auto; aspect-ratio:3 / 2; }
 .cosmic-module { align-self:start; border:2px ridge #e4c25c; background:#21104c; }
 .cosmic-module .module-title { border:0; border-bottom:1px solid #edd174; background:#251067; }
 .cosmic-module .module-title > span { float:right; color:#ffe65e; }
