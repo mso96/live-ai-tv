@@ -8,7 +8,7 @@ export function parsePlaylist(value: unknown): PlaylistItem[] {
   return [...new Map(list.map(item => [item.id, item])).values()];
 }
 
-/** Priority reports interrupt the order, never the currently playing clip. */
+/** Tracks report priority and the normal sequence; the player decides when to cut. */
 export class PlayerQueue {
   list: PlaylistItem[] = [];
   private known = new Set<string>();

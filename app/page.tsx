@@ -59,7 +59,7 @@ export default function Home() {
         if (status.status === "ready") {
           const [clip] = parsePlaylist([status.clip]);
           setReadyClip(clip);
-          setGenerationStatus("REPORT READY — NEXT ON LIVE TV");
+          setGenerationStatus("REPORT READY — SWITCHING TO YOUR REPORT...");
           return;
         }
       }

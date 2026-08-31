@@ -10,6 +10,7 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
   let busy = false;
   let disposed = false;
   let muted = false;
+  let immediate: PlaylistItem | undefined;
   let playTimer: ReturnType<typeof setTimeout> | undefined;
   let cancelPlay: (() => void) | undefined;
 
@@ -48,7 +49,14 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
       })]);
     } finally { clearTimeout(playTimer); cancelPlay = undefined; }
   }
-  async function transition(first?: PlaylistItem) {
+  function flushImmediate() {
+    if (disposed || busy || !immediate) return false;
+    const item = immediate;
+    immediate = undefined;
+    void transition(item, true);
+    return true;
+  }
+  async function transition(first?: PlaylistItem, interrupt = false) {
     if (disposed || busy) return;
     busy = true;
     const slot = started ? 1 - active : active;
@@ -66,17 +74,24 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
         hooks.signal(true);
         hooks.playing(candidate);
         busy = false;
-        preload();
+        if (!flushImmediate()) preload();
         return;
       } catch {
         if (disposed) return;
         videos[slot].pause();
         queue.fail(candidate);
         loaded[slot] = undefined;
+        // A failed urgent report must leave the still-playing broadcast alone.
+        if (interrupt && started && !videos[active].ended && !videos[active].error) {
+          busy = false;
+          if (!flushImmediate()) preload();
+          return;
+        }
         candidate = queue.next();
       }
     }
     busy = false;
+    if (flushImmediate()) return;
     if (!disposed) hooks.signal(false);
   }
   const listeners = videos.map((video, slot) => {
@@ -104,7 +119,10 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
       // The 30s poll may discover the report just before its submit response arrives.
       if (started && queue.current === item.id) { hooks.playing(item); return; }
       queue.prioritize(item);
-      preload();
+      // Keep the old picture until play() confirms the new slot can play,
+      // then cut immediately, even when the old clip has not ended.
+      immediate = item;
+      flushImmediate();
     },
     noPlaylist() { if (!started) hooks.signal(false); },
     enableSound() {
@@ -114,6 +132,7 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
     },
     dispose() {
       disposed = true;
+      immediate = undefined;
       clearTimeout(playTimer);
       cancelPlay?.();
       listeners.forEach(remove => remove());

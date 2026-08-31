@@ -57,7 +57,7 @@ function channel() {
   const player=createChannelPlayer(videos,{visible:s=>active=s,sound:s=>sounds.push(s),signal:()=>{},playing:c=>played.push(c.id)});
   return {videos,played,sounds,player,active:()=>active};
 }
-test('two-slot hard cut: current → freshly generated → next normal, including mute policy', async () => {
+test('ready report cuts immediately before current ends, then normal sequence resumes with mute policy', async () => {
   const c=channel(); c.videos.forEach(v=>v.blockSound=true);
   c.player.update(clips); await tick();
   const old=c.videos[c.active()]; const before=old.src;
@@ -65,7 +65,8 @@ test('two-slot hard cut: current → freshly generated → next normal, includin
   c.player.prioritize(report);
   assert.equal(old.src,before); assert.equal(old.paused,false);
   assert.equal(c.videos[1-c.active()].src,report.src);
-  old.finish(); await tick();
+  await tick();
+  assert.equal(old.ended,false); assert.equal(old.paused,true);
   assert.equal(c.played.at(-1),report.id); assert.equal(c.videos[c.active()].muted,true);
   const playCount=c.videos[c.active()].plays.length;
   c.player.prioritize(report); // Late completion notification must not restart a report.
@@ -82,8 +83,34 @@ test('inactive preload errors do not cut active playback; failed report is skipp
   c.videos[1-current].dispatchEvent(new Event('error')); await tick();
   assert.equal(c.active(),current); assert.equal(c.played.at(-1),id);
   c.videos.forEach(v=>v.broken.add(report.src)); c.player.prioritize(report);
+  await tick();
+  assert.equal(c.active(),current); assert.equal(c.played.at(-1),id);
+  assert.equal(c.videos[current].paused,false);
   c.videos[current].finish(); await tick();
   assert.notEqual(c.played.at(-1),report.id); assert.ok(c.played.length>1);
+  c.player.dispose();
+});
+test('urgent report keeps current picture and audio until the new video can actually play', async () => {
+  const c=channel(); c.player.update(clips); await tick();
+  const previous=c.active(); const old=c.videos[previous];
+  const incoming=c.videos[1-previous]; const originalPlay=incoming.play.bind(incoming);
+  let release;
+  incoming.play=async () => { await new Promise(resolve=>release=resolve); await originalPlay(); };
+  c.player.prioritize(report);
+  assert.equal(c.active(),previous); assert.equal(old.paused,false);
+  release(); await tick();
+  assert.equal(c.played.at(-1),report.id); assert.equal(old.paused,true); assert.equal(old.ended,false);
+  c.player.dispose();
+});
+test('completion arriving during an in-flight normal transition is not lost', async () => {
+  const c=channel(); c.player.update(clips); await tick();
+  const incoming=c.videos[1-c.active()]; const originalPlay=incoming.play.bind(incoming);
+  let release;
+  incoming.play=async () => { await new Promise(resolve=>release=resolve); await originalPlay(); };
+  c.videos[c.active()].finish();
+  c.player.prioritize(report);
+  release(); await tick();
+  assert.equal(c.played.at(-1),report.id);
   c.player.dispose();
 });
 test('dispose prevents callbacks from pending play', async () => {

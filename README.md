@@ -6,13 +6,13 @@ A forgotten British news portal, an endless television broadcast, and a deeply q
 
 **[Watch live →](https://themorningpost.app)** · **[Powered by Prodia](https://prodia.com/)**
 
-Submit a website. The channel reads it, turns it into a short, absurd British television report, and plays the result after your current clip. No studio. No sensible explanation. Just highly committed nonsense.
+Submit a website. The channel reads it, turns it into a short, absurd British television report, and cuts to the result as soon as it is ready to play. No studio. No sensible explanation. Just highly committed nonsense.
 
 ## What’s on air
 
 - **An endless channel:** two overlapping video elements preload the next clip and switch with a hard broadcast cut. Start on a random clip, then keep watching in sequence.
 - **Your website, on television:** a server-side prompt combines website details with one simple visual joke and a short English voiceover. New reports request a 15-second video from Prodia.
-- **A growing playlist:** generated videos join the shared R2 playlist. Your own completed report is prioritised for the next transition without stopping the current broadcast.
+- **A growing playlist:** generated videos join the shared R2 playlist. Your own completed report cuts in immediately once playback is ready; the current broadcast continues while the report loads.
 - **Painfully dated design:** royal-blue bars, pale-yellow sidebars, underlined links, terrible headlines, and a newspaper that still thinks it is 2003.
 - **Small-screen edition:** the broadcast comes first on phones, with wrapping navigation and a full-width submission form.
 
@@ -23,7 +23,7 @@ All news stories are fictional satire. This is an experimental project, not a ne
 1. The browser sends a website URL to the Cloudflare Worker.
 2. The Worker validates and reads the public website, builds a prompt, and starts a Prodia async job.
 3. The browser polls the job endpoint. When ready, the Worker saves the MP4 to R2 and appends it to the playlist using conditional writes.
-4. The player queues the new report without interrupting the current clip.
+4. The player loads your completed report in its second slot and cuts to it as soon as playback starts, without waiting for the current clip to end. Afterwards, the normal sequence resumes. Other viewers discover additions on the regular playlist refresh.
 
 The playlist refreshes every 30 seconds. Playback tries sound-enabled autoplay, falls back to muted playback when necessary, and offers a small **CLICK FOR SOUND** button. Failed clips are skipped; an unavailable playlist displays **NO SIGNAL / PLEASE STAND BY**.
 
