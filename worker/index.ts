@@ -48,6 +48,7 @@ const worker = {
         playlist.writeHttpMetadata(headers);
         return new Response(playlist.body, { headers });
       }
+      return json(basePlaylist());
     }
 
     if (url.pathname.startsWith("/videos/") && request.method === "GET" && env.MEDIA) {
@@ -86,7 +87,7 @@ const ABSURD_EVENTS = [
   "a suspicious loaf of bread requested diplomatic immunity",
   "the homepage caused a minor incident involving seven spoons",
 ];
-const BASE_VIDEO_IDS = ["001", "002", "003", "004", "005", "006", "007"];
+const BASE_VIDEO_IDS = ["1", "2", "3", "4", "5", "6", "7"];
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
@@ -95,6 +96,10 @@ function json(data: unknown, status = 200) {
 function buildPrompt(hostname: string) {
   const event = ABSURD_EVENTS[hostname.length % ABSURD_EVENTS.length];
   return `1990s British television countdown/documentary footage about the website ${hostname}. The film claims, in a completely serious deadpan tone, that ${event}. No presenter, no studio, no talking head, only real-world footage, dead-serious narration, dated on-screen number and title graphics, VHS softness, analog noise, colour bleed, tracking errors, cheap archival TV look, absurd subject treated as a national emergency, 16:9, 15 seconds, no readable brand logos.`;
+}
+
+function basePlaylist() {
+  return BASE_VIDEO_IDS.map((id) => ({ id, src: `/videos/${id}.mp4` }));
 }
 
 async function createProdiaJob(request: Request, env: Env) {
