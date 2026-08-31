@@ -22,7 +22,7 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
     videos[slot].pause();
     loaded[slot] = item;
     videos[slot].src = item.src;
-    videos[slot].muted = muted;
+    videos[slot].muted = true;
     videos[slot].load();
   }
   function preload() {
@@ -30,8 +30,8 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
     const item = queue.next();
     if (item) load(1 - active, item);
   }
-  async function play(video: HTMLVideoElement) {
-    video.muted = muted;
+  async function play(video: HTMLVideoElement, silent = false) {
+    video.muted = silent || muted;
     const attempt = async () => {
       try { await video.play(); }
       catch (error) {
@@ -64,10 +64,12 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
     while (!disposed && candidate) {
       load(slot, candidate);
       try {
-        await play(videos[slot]);
+        // Start the incoming slot silently so play() cannot overlap two voices.
+        await play(videos[slot], started);
         if (disposed) return;
-        if (started) videos[active].pause();
+        if (started) { videos[active].muted = true; videos[active].pause(); }
         active = slot;
+        videos[active].muted = muted;
         started = true;
         queue.played(candidate);
         hooks.visible(slot);
@@ -127,7 +129,7 @@ export function createChannelPlayer(videos: HTMLVideoElement[], hooks: Hooks) {
     noPlaylist() { if (!started) hooks.signal(false); },
     enableSound() {
       muted = false;
-      videos.forEach(video => { video.muted = false; });
+      videos.forEach((video, slot) => { video.muted = !started || slot !== active; });
       hooks.sound(false);
     },
     dispose() {

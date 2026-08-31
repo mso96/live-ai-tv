@@ -113,6 +113,35 @@ test('completion arriving during an in-flight normal transition is not lost', as
   assert.equal(c.played.at(-1),report.id);
   c.player.dispose();
 });
+test('only the active slot is audible, including sound clicks during an immediate cut', async () => {
+  const c=channel(); c.player.update(clips); await tick();
+  const old=c.videos[c.active()]; const incoming=c.videos[1-c.active()];
+  assert.equal(old.muted,false); assert.equal(incoming.muted,true);
+  const originalPlay=incoming.play.bind(incoming); let release;
+  incoming.play=async () => { await originalPlay(); await new Promise(resolve=>release=resolve); };
+  c.player.prioritize(report); await tick();
+  assert.equal(old.paused,false); assert.equal(incoming.paused,false);
+  assert.equal(incoming.muted,true);
+  assert.equal(c.videos.filter(v=>!v.paused&&!v.muted).length,1);
+  c.player.enableSound();
+  assert.equal(old.muted,false); assert.equal(incoming.muted,true);
+  release(); await tick();
+  assert.equal(old.paused,true); assert.equal(old.muted,true);
+  assert.equal(incoming.muted,false);
+  assert.equal(c.videos.filter(v=>!v.paused&&!v.muted).length,1);
+  c.player.dispose();
+});
+test('muted incoming report stays muted after cut until the viewer enables sound', async () => {
+  const c=channel(); c.videos.forEach(v=>v.blockSound=true);
+  c.player.update(clips); await tick();
+  c.player.prioritize(report); await tick();
+  assert.equal(c.played.at(-1),report.id);
+  assert.ok(c.videos.every(v=>v.muted));
+  c.player.enableSound();
+  assert.equal(c.videos[c.active()].muted,false);
+  assert.equal(c.videos[1-c.active()].muted,true);
+  c.player.dispose();
+});
 test('dispose prevents callbacks from pending play', async () => {
   const c=channel(); c.player.update(clips); c.player.dispose(); await tick();
   assert.deepEqual(c.played,[]); assert.ok(c.videos.every(v=>v.paused));
@@ -142,8 +171,9 @@ test('simple scenes avoid recent repetition and use one short exact English narr
   for(const text of ['Exact invoice export feature','15 seconds','No presenter','No studio','No countdown number','one continuous shot','one visual joke','clear, natural English','VHS effects must not distort speech','untrusted','1990s']) assert.ok(prompt.includes(text),text);
   for(const direction of history) {
     const script=buildPrompt(source,direction);
-    const voice=script.match(/Say exactly this sentence once, then leave quiet location sound:\n"([^"]+)"/)[1];
-    assert.ok(voice.split(/\s+/).length<=16,voice);
+    const voice=script.match(/Say exactly this sentence once:\n"([^"]+)"/)[1];
+    assert.ok(voice.split(/\s+/).length<=10,voice);
+    for (const rule of ['Exactly one off-screen British narrator', 'Start at 2 seconds and finish by 7 seconds', 'Silence before and after', 'One voice track only', 'No overlapping voices', 'Everyone on screen stays silent', 'VHS is visual only']) assert.ok(script.includes(rule),rule);
     assert.equal((voice.match(/\./g)||[]).length,1);
     assert.equal((script.match(/SCENE:/g)||[]).length,1);
   }
