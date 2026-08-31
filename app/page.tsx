@@ -76,7 +76,7 @@ export default function Home() {
     <main className="portal-page">
       <div className="old-noise" aria-hidden="true" />
       <div className="portal-shell">
-        <header className="site-header"><button className="wordmark" onClick={() => setSelected(null)}>the<span>morning</span>post<span className="dot">.co.uk</span></button><a className="prodia-credit" href="https://prodia.com/" target="_blank" rel="noopener noreferrer" aria-label="Powered by Prodia — opens in a new tab"><img src="/assets/powered-by-prodia-badge.png" alt="Powered by Prodia" width="2172" height="724" /></a></header>
+        <header className="site-header"><button className="wordmark" onClick={() => setSelected(null)}>the<span>morning</span>post</button><a className="prodia-credit" href="https://prodia.com/" target="_blank" rel="noopener noreferrer" aria-label="Powered by Prodia — opens in a new tab"><img src="/assets/powered-by-prodia-badge.png" alt="Powered by Prodia" width="2172" height="724" /></a></header>
         <nav className="main-nav">{["HOME", "NEWS", "UK", "WORLD", "POLITICS", "BUSINESS", "SPORT", "ENTERTAINMENT", "LIFE"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}</nav>
         <div className="sub-nav"><span>Most Read</span> | Latest News | Video | Blogs | Weather | Horoscopes | Classifieds <label>Search <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search" /></label></div>
 
