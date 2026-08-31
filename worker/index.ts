@@ -83,7 +83,7 @@ function json(data: unknown, status = 200) {
 
 function buildPrompt(hostname: string) {
   const event = ABSURD_EVENTS[hostname.length % ABSURD_EVENTS.length];
-  return `A completely serious 2003 British television news report about the website ${hostname}. The report claims that ${event}. Grainy VHS broadcast look, awkward public-access studio, flat deadpan presenter, red breaking-news graphics, absurd but treated as national emergency, 16:9, six seconds, no readable text, no logos.`;
+  return `1990s British television countdown/documentary footage about the website ${hostname}. The film claims, in a completely serious deadpan tone, that ${event}. No presenter, no studio, no talking head, only real-world footage, dead-serious narration, dated on-screen number and title graphics, VHS softness, analog noise, colour bleed, tracking errors, cheap archival TV look, absurd subject treated as a national emergency, 16:9, 15 seconds, no readable brand logos.`;
 }
 
 async function createProdiaJob(request: Request, env: Env) {
@@ -95,7 +95,7 @@ async function createProdiaJob(request: Request, env: Env) {
   if (!/^https?:$/.test(parsed.protocol)) return json({ error: "Only http and https URLs are supported" }, 400);
   const prompt = buildPrompt(parsed.hostname);
   console.log(JSON.stringify({ event: "prodia_prompt", hostname: parsed.hostname, prompt }));
-  const response = await fetch(PRODIA_ASYNC_URL, { method: "POST", headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4", "content-type": "application/json" }, body: JSON.stringify({ type: env.PRODIA_MODEL_TYPE, config: { prompt, duration: 5, aspect_ratio: "16:9", resolution: "720p" } }) });
+  const response = await fetch(PRODIA_ASYNC_URL, { method: "POST", headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4", "content-type": "application/json" }, body: JSON.stringify({ type: env.PRODIA_MODEL_TYPE, config: { prompt, duration: 15, aspect_ratio: "16:9", resolution: "720p" } }) });
   if (!response.ok) return json({ error: "Unable to start Prodia report" }, 502);
   const result = await response.json() as { id?: string };
   if (!result.id) return json({ error: "Prodia did not return a job id" }, 502);
