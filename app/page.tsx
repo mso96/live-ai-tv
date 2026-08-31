@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InfiniteTV from "./components/InfiniteTV";
+import { parsePlaylist, type PlaylistItem } from "./lib/playerQueue";
 
 type Story = { title: string; standfirst: string; section: string; time: string };
 
@@ -21,30 +22,53 @@ export default function Home() {
   const [siteUrl, setSiteUrl] = useState("");
   const [sent, setSent] = useState(false);
   const [generationStatus, setGenerationStatus] = useState("");
+  const [readyClip, setReadyClip] = useState<PlaylistItem>();
+  const generation = useRef<AbortController | null>(null);
+  useEffect(() => () => generation.current?.abort(), []);
   const visibleStories = stories.filter((story) => story.title.toLowerCase().includes(search.toLowerCase()));
 
   const openStory = (story: Story) => { setSelected(story); setPlaying(false); window.scrollTo({ top: 0 }); };
   const sendWebsite = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (generation.current) return;
+    const abort = new AbortController();
+    generation.current = abort;
     setSent(true);
-    setGenerationStatus("SENDING TO PRODIA...");
+    setGenerationStatus("READING WEBSITE — PREPARING A HIGHLY SERIOUS REPORT...");
     try {
-      const response = await fetch("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url: siteUrl }) });
+      const response = await fetch("/api/generate", { method: "POST", signal: abort.signal, headers: { "content-type": "application/json" }, body: JSON.stringify({ url: siteUrl }) });
       const result = await response.json() as { jobId?: string; error?: string };
       if (!response.ok || !result.jobId) throw new Error(result.error || "Report unavailable");
-      const waitUntil = Date.now() + 20000;
+      const deadline = Date.now() + 10 * 60 * 1000;
       setGenerationStatus("REPORT RECEIVED — WAITING FOR THE NEXT TRANSMISSION...");
-      const poll = async () => {
-        const statusResponse = await fetch(`/api/generate/${result.jobId}`, { cache: "no-store" });
-        const status = await statusResponse.json() as { status?: string };
-        if (!statusResponse.ok || status.status === "failed") throw new Error("REPORT FAILED — LIVE TV CONTINUES");
-        if (status.status === "ready" && Date.now() >= waitUntil) { setGenerationStatus("NEW REPORT ADDED TO LIVE TV"); setSent(false); return; }
-        window.setTimeout(poll, Math.max(1000, Date.now() < waitUntil ? 2000 : 3000));
-      };
-      window.setTimeout(poll, 2000);
+      let failures = 0;
+      while (!abort.signal.aborted && Date.now() < deadline) {
+        await new Promise<void>((resolve, reject) => {
+          const cancel = () => { clearTimeout(timer); reject(new DOMException("Aborted", "AbortError")); };
+          const timer = setTimeout(() => { abort.signal.removeEventListener("abort", cancel); resolve(); }, 2000);
+          abort.signal.addEventListener("abort", cancel, { once: true });
+        });
+        const statusResponse = await fetch(`/api/generate/${result.jobId}`, { cache: "no-store", signal: abort.signal });
+        const status = await statusResponse.json() as { status?: string; error?: string; clip?: PlaylistItem };
+        if (status.status === "failed") throw new Error("REPORT FAILED — LIVE TV CONTINUES");
+        if (!statusResponse.ok) {
+          if (++failures < 5 && statusResponse.status >= 500) continue;
+          throw new Error(status.error || "REPORT FAILED — LIVE TV CONTINUES");
+        }
+        failures = 0;
+        if (status.status === "ready") {
+          const [clip] = parsePlaylist([status.clip]);
+          setReadyClip(clip);
+          setGenerationStatus("REPORT READY — NEXT ON LIVE TV");
+          return;
+        }
+      }
+      throw new Error("REPORT TAKING TOO LONG — LIVE TV CONTINUES");
     } catch (error) {
-      setGenerationStatus(error instanceof Error ? error.message : "REPORT FAILED — LIVE TV CONTINUES");
-      setSent(false);
+      if (!abort.signal.aborted) setGenerationStatus(error instanceof Error ? error.message : "REPORT FAILED — LIVE TV CONTINUES");
+    } finally {
+      if (!abort.signal.aborted) setSent(false);
+      generation.current = null;
     }
   };
 
@@ -59,7 +83,7 @@ export default function Home() {
         {selected ? <Article story={selected} playing={playing} setPlaying={setPlaying} onBack={() => setSelected(null)} /> : (
           <div className="portal-grid">
             <aside className="left-col"><ModuleTitle>FUN STUFF</ModuleTitle><div className="fun-box"><div className="fun-icon euro">€</div><a>Buying or selling Euro 2000 tickets?</a><p><a>Click here first!</a></p></div><div className="fun-box"><div className="fun-icon arrow-box">➜<small>TRY THIS!</small></div><a>Find out about online auction payments</a><p>with first-e the internet bank</p></div><ModuleTitle>MUSIC</ModuleTitle><div className="music-box"><b>NOW PLAYING:</b><a> Cameron’s World Mix</a><audio controls src="/assets/cameronsworld.mp3" /></div><div className="side-ad">ADVERTISEMENT<br /><strong>WIN A HOLIDAY<br />TO SLOUGH!</strong><button>CLICK HERE</button></div></aside>
-            <section className="centre-col"><h1>Live TV</h1><div className="date-line">Sunday 30 August 2003 &nbsp; | &nbsp; Live from our television studio</div><div className="live-tv"><div className="tv-label">LIVE TV <span>● ON AIR</span></div><InfiniteTV /></div><form className="website-submit" onSubmit={sendWebsite}><input value={siteUrl} onChange={(event) => setSiteUrl(event.target.value)} placeholder="ENTER WEBSITE ADDRESS" aria-label="Website address" /><button type="submit">{sent ? "ADDRESS SENT!" : "SEND WEBSITE"}</button></form><div className="submit-note">{generationStatus || "SEND A WEBSITE TO SEE IT ON TV"}</div></section>
+            <section className="centre-col"><h1>Live TV</h1><div className="date-line">Sunday 30 August 2003 &nbsp; | &nbsp; Live from our television studio</div><div className="live-tv"><div className="tv-label">LIVE TV <span>● ON AIR</span></div><InfiniteTV priorityClip={readyClip} onPlaying={clip => { if (clip.id === readyClip?.id) { setGenerationStatus("YOUR REPORT IS NOW ON AIR"); setReadyClip(undefined); } }} /></div><form className="website-submit" onSubmit={sendWebsite}><input value={siteUrl} onChange={(event) => setSiteUrl(event.target.value)} placeholder="ENTER WEBSITE ADDRESS" aria-label="Website address" /><button type="submit" disabled={sent}>{sent ? "ADDRESS SENT!" : "SEND WEBSITE"}</button></form><div className="submit-note">{generationStatus || "SEND A WEBSITE TO SEE IT ON TV"}</div></section>
             <aside className="right-col"><RightModule title="Sport Latest"><a href="#">Man accidentally wins football match</a><a href="#">Cricket cancelled after bat develops opinions</a><a href="#">Tennis player blames trousers</a><a href="#">More sport news &gt;&gt;</a></RightModule><RightModule title="Weather"><div className="weather"><b>London</b><strong>17°</strong><span>Cloudy with a chance of nonsense</span></div><a href="#">Five day forecast &gt;&gt;</a></RightModule><RightModule title="Most Read"><a href="#">1. Spoon incident enters second week</a><a href="#">2. Is Birmingham thinking?</a><a href="#">3. Bread: friend or foe?</a></RightModule><RightModule title="Horoscopes"><p className="horoscope">♈ <b>Aries</b> &nbsp; Avoid roundabouts and people named Colin.</p><a href="#">Read your horoscope &gt;&gt;</a></RightModule></aside>
           </div>
         )}
