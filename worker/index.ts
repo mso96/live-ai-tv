@@ -50,6 +50,16 @@ const worker = {
       }
     }
 
+    if (url.pathname.startsWith("/videos/") && request.method === "GET" && env.MEDIA) {
+      const object = await env.MEDIA.get(url.pathname.slice(1));
+      if (object) {
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set("cache-control", "public, max-age=31536000, immutable");
+        return new Response(object.body, { headers });
+      }
+    }
+
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {
@@ -68,6 +78,7 @@ const worker = {
 export default worker;
 
 const PRODIA_ASYNC_URL = "https://inference.prodia.com/v2/job/async";
+const DEFAULT_PRODIA_MODEL_TYPE = "inference.minimax.h3.fast.txt2vid.v1";
 const ABSURD_EVENTS = [
   "a council meeting was interrupted by a very confident pigeon",
   "three ministers were found arguing with a revolving door",
@@ -87,7 +98,7 @@ function buildPrompt(hostname: string) {
 }
 
 async function createProdiaJob(request: Request, env: Env) {
-  if (!env.PRODIA_TOKEN || !env.PRODIA_MODEL_TYPE) return json({ error: "Prodia is not configured" }, 503);
+  if (!env.PRODIA_TOKEN) return json({ error: "Prodia is not configured" }, 503);
   let body: { url?: string };
   try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
   let parsed: URL;
@@ -95,7 +106,7 @@ async function createProdiaJob(request: Request, env: Env) {
   if (!/^https?:$/.test(parsed.protocol)) return json({ error: "Only http and https URLs are supported" }, 400);
   const prompt = buildPrompt(parsed.hostname);
   console.log(JSON.stringify({ event: "prodia_prompt", hostname: parsed.hostname, prompt }));
-  const response = await fetch(PRODIA_ASYNC_URL, { method: "POST", headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4", "content-type": "application/json" }, body: JSON.stringify({ type: env.PRODIA_MODEL_TYPE, config: { prompt, duration: 15, aspect_ratio: "16:9", resolution: "720p" } }) });
+  const response = await fetch(PRODIA_ASYNC_URL, { method: "POST", headers: { Authorization: `Bearer ${env.PRODIA_TOKEN}`, Accept: "video/mp4", "content-type": "application/json" }, body: JSON.stringify({ type: env.PRODIA_MODEL_TYPE || DEFAULT_PRODIA_MODEL_TYPE, config: { prompt, duration: 15, aspect_ratio: "16:9", resolution: "768P" } }) });
   if (!response.ok) return json({ error: "Unable to start Prodia report" }, 502);
   const result = await response.json() as { id?: string };
   if (!result.id) return json({ error: "Prodia did not return a job id" }, 502);
